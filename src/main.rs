@@ -1,9 +1,11 @@
 use clap::{Arg, App};
-use log::{info, debug, error};
+use log::{info, debug};
 use env_logger;
 
 mod socket;
 mod request;
+mod single;
+
 
 fn main() -> std::io::Result<()> {
     env_logger::init();
@@ -54,7 +56,7 @@ fn main() -> std::io::Result<()> {
     let tcp_listener = socket::socket_listen(port)?;
 
     if mode == "single" {
-        //single_server(tcp_listener);
+        single::single_server(&tcp_listener, root_path.to_string());
     } else if mode == "forking" {
         //forking_server(tcp_listener);
     }
