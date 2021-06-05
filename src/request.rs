@@ -1,8 +1,9 @@
 // request.rs
 // contains struct definitions and implementations for handling HTTP headers / requests
 
-use std::fs::File;
+use std::fs;
 use std::error::Error;
+use std::path::PathBuf;
 use std::io::prelude::*;
 use std::collections::LinkedList;
 
@@ -32,6 +33,7 @@ pub struct Request {
     pub host: Option<std::net::SocketAddr>,
     pub method: String,
     pub uri: String,
+    pub path: PathBuf,
     pub headers: LinkedList<Header>,
 }
 
@@ -42,9 +44,37 @@ impl Request {
             host: None,
             method: "".to_string(),
             uri: "".to_string(),
+            path: PathBuf::new(),
             headers: LinkedList::new(),
         }
     }
+
+    pub fn handle_request(&mut self, root_path: String) {
+        self.parse_request(); /* TODO: if error, return HTTP_STATUS_BAD_REQUEST */
+
+        match self.determine_request_path(root_path) {
+            Ok(_) => log::info!("Request to path {:?}", self.path),
+            Err(e) => log::error!("Bad path given: {}", e), /* TODO: return HTTP_STATUS_BAD_REQUEST status error code in this case */
+        }
+
+        // Determine filetype. PathBuf type kinda does it for us!
+        if self.path.is_dir() {
+            self.handle_browse_request();
+        } else if self.path.is_file() {
+            self.handle_file_request();
+        } else {
+            /* HTTP_STATUS_BAD_REQUEST */
+            self.handle_error();
+        }
+    }
+
+    fn determine_request_path(&mut self, root_path: String) -> Result<(), Box<dyn Error>> {
+        let p = PathBuf::from(format!("{}/{}", root_path, self.uri));
+        self.path = fs::canonicalize(&p)?;
+
+        Ok(())
+    }
+
     // TODO: return request or not
     pub fn accept_request(&mut self, tcp_listener: &std::net::TcpListener) -> Result<(), Box<dyn Error>> {
         match tcp_listener.accept() {
@@ -63,11 +93,11 @@ impl Request {
     }
 
     // Parse a request for method, uri, and headers
-    pub fn parse_request(&mut self) -> Result<(), Box<dyn Error>> {
+    fn parse_request(&mut self) -> Result<(), Box<dyn Error>> {
         let mut buffer = [0; 4096];
         self.tcp_stream.as_ref().unwrap().read(&mut buffer).unwrap(); // how to read stream
 
-        let mut tmp = String::from_utf8_lossy(&buffer[..]);
+        let tmp = String::from_utf8_lossy(&buffer[..]);
         log::debug!("tmp: {:?}", tmp);
 
         // 1. split by \r\n
@@ -84,8 +114,8 @@ impl Request {
         self.uri = uri.unwrap().to_string();
 
         for line in nl {
-            let mut headers = line.replace(" ", "");
-            let mut htest = headers.split(":").collect::<Vec<&str>>();
+            let headers = line.replace(" ", "");
+            let htest = headers.split(":").collect::<Vec<&str>>();
 
             if htest[0].len() == 0 {
                 break
@@ -99,5 +129,18 @@ impl Request {
 
         Ok(())
     }
+    
+    fn handle_browse_request(&self) {
+
+    }
+
+    fn handle_file_request(&self) {
+
+    }
+
+    fn handle_error(&mut self) {
+
+    }
 
 }
+
