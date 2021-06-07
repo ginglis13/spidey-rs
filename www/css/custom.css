@@ -1,0 +1,32 @@
+#heading {
+    padding-top:    10px;
+    padding-bottom: 10px;
+}
+
+$font-family-sans-serif:
+  // Safari for macOS and iOS (San Francisco)
+  -apple-system,
+  // Chrome < 56 for macOS (San Francisco)
+  BlinkMacSystemFont,
+  // Windows
+  "Segoe UI",
+  // Android
+  "Roboto",
+  // Basic web fallback
+  "Helvetica Neue", Arial, sans-serif,
+  // Emoji fonts
+  "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol" !default;
+
+footer {
+    position: fixed;
+    height: 100px;
+    bottom: 0;
+    width: 100%;
+}
+
+.jumbotron{
+	background-image: url('../images/bg.jpg');
+	background-size: cover;
+	background-repeat: no-repeat;
+
+}
