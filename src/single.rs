@@ -9,6 +9,7 @@ pub fn single_server(stream: &TcpListener, root_path: String) {
     loop {
     	/* Accept request */
         let mut r = Request::new();
+        r.accept_request(stream);
 
 	    /* Handle request */
         r.handle_request(root_path.to_string());
