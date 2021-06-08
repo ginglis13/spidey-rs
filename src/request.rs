@@ -116,7 +116,6 @@ impl Request {
         self.tcp_stream.as_ref().unwrap().read(&mut buffer).unwrap(); // how to read stream
 
         let tmp = String::from_utf8_lossy(&buffer[..]);
-        log::debug!("tmp: {:?}", tmp);
 
         // 1. split by \r\n
         let mut nl = tmp.split("\r\n");
@@ -187,12 +186,14 @@ impl Request {
             // Create the href
             stream.write(&"<a href=".as_bytes())?;
 
+            // Write uri to href
+            stream.write(self.uri.as_bytes())?;
+
             // Check root dir and relative dirs
-            if self.uri == String::from("/") {
+            if self.uri != String::from("/") {
                 stream.write(&"/".as_bytes())?;
             }
 
-            // TODO: href contains quotes
             // Add path to href, close href, add label
             stream.write(format!("{} ", entry_name.to_str().unwrap()).as_bytes())?;
             stream.write(&"class=\"list-group-item list-group-item-action\">".as_bytes())?;
@@ -209,9 +210,6 @@ impl Request {
     fn handle_file_request(&mut self) -> Result<(), Box<dyn Error>> {
 
         let mut stream = self.tcp_stream.as_ref().unwrap();
-
-        // TODO: This will panic if the file contents are not valid UTF-8 !!
-        //let file_contents = fs::read_to_string(self.path.to_str().unwrap()).unwrap();
 
         /* Determine mimetype */
         //let mimetype = determine_mimetype(self.path);
