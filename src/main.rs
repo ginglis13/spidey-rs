@@ -5,6 +5,7 @@ use env_logger;
 mod socket;
 mod request;
 mod single;
+mod forking;
 
 
 fn main() -> std::io::Result<()> {
@@ -58,7 +59,7 @@ fn main() -> std::io::Result<()> {
     if mode == "single" {
         single::single_server(&tcp_listener, root_path.to_string());
     } else if mode == "forking" {
-        //forking_server(tcp_listener);
+        forking::forking_server(&tcp_listener, root_path.to_string());
     }
 
     Ok(())
