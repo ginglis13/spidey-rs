@@ -232,8 +232,10 @@ impl Request {
                     if nread == 0 {
                         break; 
                     }
-                    // Check that bytes read = bytes written ??
-                    let nwritten = stream.write(&buffer).unwrap();
+                    
+                    // Write only the amount of bytes read! fixes binary 
+                    // looking issue when extra 0 characters written to stream
+                    let nwritten = stream.write(&buffer[..nread]).unwrap();
 
                     if nread != nwritten {
                         // TODO: this handle_error is a mutable borrow. Cannot occur due to
@@ -242,6 +244,7 @@ impl Request {
                         // e not in scope (duh) -> just return Ok() since handle_error displays
                         // 500 page? That would differ from below Err(e) case below...
                         // return Err(Box::new(x)); 
+                        log::error!("UNEQUAL BYTES... read: {} written: {}", nread, nwritten);
                     }
                 },
                 Err(e) => { // Read error can occur 
